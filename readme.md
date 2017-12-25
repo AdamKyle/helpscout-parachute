@@ -11,6 +11,10 @@ SITE_ID=
 HELPSCOUT_DOCS_API_KEY=
 ```
 
+Next run:
+
+`composer install`
+
 ## Commands
 
 The following will pull what ever you have up on Helpscout down and create the associated relations between the three.
