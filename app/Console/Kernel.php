@@ -9,6 +9,7 @@ use App\Console\Commands\FetchCategories;
 use App\Console\Commands\FetchArticles;
 use App\Console\Commands\CreateArticles;
 use App\Console\Commands\ResetDatabase;
+use App\Console\Commands\DeleteCollection;
 
 class Kernel extends ConsoleKernel
 {
@@ -22,7 +23,8 @@ class Kernel extends ConsoleKernel
         FetchCategories::class,
         FetchArticles::class,
         CreateArticles::class,
-        ResetDatabase::class
+        ResetDatabase::class,
+        DeleteCollection::class,
     ];
 
     /**

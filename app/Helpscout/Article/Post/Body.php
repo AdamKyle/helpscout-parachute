@@ -26,6 +26,10 @@ class Body implements ArticlePostBodyContract {
         $this->text = $text;
     }
 
+    public function getText() {
+        $this->text;
+    }
+
     public function categories(array $categories) {
         $this->categories = $categories;
     }

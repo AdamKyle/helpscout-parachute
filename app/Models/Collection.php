@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Model\Category;
+use App\Models\Category;
+use App\Models\Article;
 
 class Collection extends Model
 {
@@ -25,5 +26,9 @@ class Collection extends Model
 
     public function categories() {
         return $this->hasMany(Category::class, 'collection_id');
+    }
+
+    public function articles() {
+        return $this->hasMany(Article::class, 'collection_id');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Helpscout\Domain\Services;
 use \Articles;
 use \Article as ArticleFacade;
 use \Pool;
+use cebe\markdown\Markdown;
 use App\Helpscout\Domain\Entities\Article as ArticleEntity;
 use App\Helpscout\Domain\Values\Category;
 use App\Helpscout\Domain\Values\Article as ArticleValue;
@@ -49,11 +50,17 @@ class Article {
     protected function createMultiple(array $fileContents, Collection $collection) {
         $requests = new Requests();
 
+        if (count($fileContents) === 0) {
+            throw new \Exception('Cannot proceede, there were no files found. Check your path.');
+        }
+
         forEach($fileContents as $fileContent) {
-            $body = new Body();
+            $markdownToHtml = new Markdown();
+            $body           = new Body();
+
             $body->collectionId($collection->getId());
             $body->name($fileContent->getFileName());
-            $body->text($fileContent->getContents());
+            $body->text($markdownToHtml->parse($fileContent->getContents()));
             $body->categories([
                 CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
             ]);
@@ -64,7 +71,10 @@ class Article {
 
         Pool::pool(
             $requests,
-            function($reason, $index) {
+            function($reason, $index) use($requests) {
+                // Lets see what was in that request that failed:
+                dd($requests->getRequests()[$index]->getBody()->getContents());
+
                 throw new \Exception($reason);
             },
             function($response) {
@@ -83,8 +93,13 @@ class Article {
     }
 
     protected function fetchAllFiles(Arguments $args) {
-        $files = new Files();
-        $files->getAllContents($args->getPath(), $args->getDirectoryNesting(), $args->shouldRemoveFirstElement());
+        $files = new Files($args->getCategoryIndex());
+
+        $files->getAllContents(
+            $args->getPath(),
+            $args->getDirectoryNesting(),
+            $args->shouldRemoveFirstElement()
+        );
 
         return $files->getAllFiles();
     }

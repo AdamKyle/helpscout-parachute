@@ -4,14 +4,20 @@ namespace App\Helpscout\Files;
 
 use League\HTMLToMarkdown\HtmlConverter;
 use App\Helpscout\Domain\Values\FileInformation;
+use \DOMDocument;
 
 class Files {
 
     private $files              = [];
     private $filesFromDirectory = [];
     private $category;
+    private $categoryIndex;
 
     private $tmp = [];
+
+    public function __construct(int $categoryIndex = 2) {
+        $this->categoryIndex = $categoryIndex;
+    }
 
     public function getAllContents(string $path, int $directoryNesting = 0, bool $removeFirstElement = false) {
         $recursiveIteratorIterator = new \RecursiveIteratorIterator(
@@ -24,10 +30,18 @@ class Files {
         $this->filesFromDirectory($recursiveIteratorIterator, $removeFirstElement);
 
         forEach ($this->filesFromDirectory as $fileDetails) {
-            if (pathinfo($fileDetails, PATHINFO_EXTENSION) === 'md') {
+            $fileExtension = pathinfo($fileDetails, PATHINFO_EXTENSION);
+
+            if ($fileExtension === 'md' || $fileExtension === 'html') {
                 // Take off the Users/User/Path/Base ...
                 $fileBreakdown = array_slice(explode('/', $fileDetails), 4);
-                $fileName      = explode('.md', end($fileBreakdown))[0];
+
+                // Grab the file name based on extension
+                if ($fileExtension === 'html') {
+                    $fileName = explode('.html', end($fileBreakdown))[0];
+                } else {
+                    $fileName = explode('.md', end($fileBreakdown))[0];
+                }
 
                 // We now have the file name, so we can remove it.
                 array_pop($fileBreakdown);
@@ -36,8 +50,14 @@ class Files {
                     // Set the category based on the directory nesting.
                     $this->setCategory($fileBreakdown, $directoryNesting);
                 } else {
-                    // By default we take the second directory as the category
-                    $this->category = $fileBreakdown[2] ?? 'manuals';
+                    $categoryIndex = 2;
+
+                    if (count($fileBreakdown) !== $this->categoryIndex) {
+                        $categoryIndex = $this->categoryIndex;
+                    }
+
+                    // By default we take the second directory as the category unless specified
+                    $this->category = $fileBreakdown[$categoryIndex] ?? 'untitled-category';
                 }
 
                 if ($fileName !== '') {
@@ -48,6 +68,7 @@ class Files {
 
                     // If the contents of a file are not empty:
                     if ($contents !== '') {
+
                         $this->files[] = new FileInformation($fileName, $this->category, $contents);
                     }
                 }

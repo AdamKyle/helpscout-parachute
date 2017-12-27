@@ -3,7 +3,7 @@
 namespace App\Helpscout\Domain\Entities;
 
 use App\Models\Article as ArticleModel;
-use App\Helpscout\Domain\Values\Collection;
+use App\Helpscout\Domain\Entities\Collection;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Article extends ArticleModel {
@@ -14,7 +14,7 @@ class Article extends ArticleModel {
             'article_number' => $article['number'],
             'status'         => $article['status'],
             'name'           => $article['name'],
-            'collection_id'  => $article['collectionId'],
+            'collection_id'  => Collection::where('collection_id', $article['collectionId'])->first()->id,
             'content'        => $article['text'],
         ]);
     }

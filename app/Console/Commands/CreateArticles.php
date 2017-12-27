@@ -18,7 +18,7 @@ class CreateArticles extends Command
      *
      * @var string
      */
-    protected $signature = 'create:docs {collection} {path} {directoryNesting?} {removeFirstElement?}';
+    protected $signature = 'create:docs {collection} {path} {directoryNesting?} {removeFirstElement?} {categoryIndex?}';
 
     /**
      * The console command description.
@@ -52,7 +52,8 @@ class CreateArticles extends Command
             $this->argument('collection'),
             $this->argument('path'),
             $this->argument('directoryNesting'),
-            $this->argument('removeFirstElement')
+            $this->argument('removeFirstElement'),
+            $this->argument('categoryIndex')
         );
 
         $collectionValue = null;
