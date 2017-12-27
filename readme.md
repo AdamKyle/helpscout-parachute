@@ -29,3 +29,10 @@ To publish articles you can do:
 - `Path`: The path to the files which have to be MD based.
 - `directoryNesting`: Based on nested directory structure, there might be a specific folder in the breakdown that you ant to use as a category, by default we will use the second folder down in the structure.
 - `removeFirstElement`: If there are less then 2 folders structures down then we can (by default false) remove that specific section from the list.
+
+### Other Commands
+
+- `php artisan fetch:collection`: Fetch all collection
+- `php artisan fetch:categories`: Fetch all categories
+- `php artisan fetch:articles`: Fetch all articles
+- `php artisan delete:collection {collection}`: Deletes all articles, categories and the collection, both from Helpscout and the database (as well as article and category has many relationships)
