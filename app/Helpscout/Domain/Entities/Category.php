@@ -6,6 +6,7 @@ use App\Models\Category as CategoryModel;
 use App\Helpscout\Domain\Values\Collection;
 use Illuminate\Support\Collection as IlluminateCollection;
 use App\Helpscout\Domain\Values\Category as CategoryValue;
+use App\Helpscout\Domain\Entities\Collection as CollectionEntity;
 
 class Category extends CategoryModel {
 
@@ -18,15 +19,16 @@ class Category extends CategoryModel {
         ]);
     }
 
-    public function findByName(string $name) {
-        $categoryCollecton = CategoryEntity::where('name', $name)->first();
+    public function findByNameAndCollectionId(string $name, string $collectionId) {
+        $collectionEntity = CollectionEntity::where('collection_id', $collectionId)->first();
+        $category = $collectionEntity->categories->where('name', $name)->first();
 
-        if (is_null($categoryCollecton)) {
+        if (is_null($category)) {
             return null;
         }
 
-        $categoryValue = new CategoryValue($categoryCollecton->category_id);
-        $categoryValue->setDbId($categoryCollecton->id);
+        $categoryValue = new CategoryValue($category->category_id);
+        $categoryValue->setDbId($category->id);
 
         return $categoryValue;
     }

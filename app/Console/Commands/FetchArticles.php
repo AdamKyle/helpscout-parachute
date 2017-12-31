@@ -18,7 +18,7 @@ class FetchArticles extends Command
      *
      * @var string
      */
-    protected $signature = 'fetch:articles {category?}';
+    protected $signature = 'fetch:articles {category?} {collectionId?}';
 
     /**
      * The console command description.
@@ -45,11 +45,12 @@ class FetchArticles extends Command
     public function handle()
     {
         $categoryName      = $this->argument('category');
+        $collectionId      = $this->argument('collectionId');
         $categoryCollecton = CategoryEntity::all();
         $articleService    = new Article();
 
-        if (!is_null($categoryName)) {
-            $categoryValue = (new CategoryEntity())->findByName($categoryName);
+        if (!is_null($categoryName) && !is_null($collectionId)) {
+            $categoryValue = (new CategoryEntity())->findByNameAndCollectionId($categoryName, $collectionId);
 
             if (is_null($categoryValue)) {
                 throw new \Exception($categoryName . ' was not found.');

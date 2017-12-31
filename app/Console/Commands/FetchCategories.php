@@ -45,9 +45,9 @@ class FetchCategories extends Command
         $collectionName = $this->argument('collection');
 
         if (!is_null($collectionName)) {
-            $collection = (new CollectionEntity())->findByName($collectionName);
+            $collectionValue = (new CollectionEntity())->findByName($collectionName);
 
-            if (is_null($collection)) {
+            if (is_null($collectionValue)) {
                 throw new \Exception($collectionName . ' was not found');
             }
 

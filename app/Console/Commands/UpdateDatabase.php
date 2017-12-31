@@ -52,7 +52,10 @@ class UpdateDatabase extends Command
                 $this->call('fetch:categories', ['collection' => $col->name]);
 
                 forEach($collectionDb->categories as $category) {
-                    $this->call('fetch:articles', ['category' => $category->name]);
+                    $this->call('fetch:articles', [
+                        'category' => $category->name,
+                        'collectionId' => $col->id
+                    ]);
                 }
             }
         }
