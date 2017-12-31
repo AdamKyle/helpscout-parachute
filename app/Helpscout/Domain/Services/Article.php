@@ -21,17 +21,15 @@ use HelpscoutApi\Response\Response;
 class Article {
 
     public function fetchAll(Category $category) {
-        $articles = Articles::getAllFromCategory($category)->articles->items;
+        return Articles::getAllFromCategory($category)->articles->items;
+    }
 
-        if (count($articles) > 0) {
-            forEach($articles as $article) {
-                $articleValue = new ArticleValue($article->id);
-                $article      = Articles::getSingle($articleValue)->article;
-                $articleModel = (new ArticleEntity())->new(collect($article));
+    public function fetchAllFromCollection(Collection $collection) {
+        return Article::getAllFromCollection($collection)->articles->items;
+    }
 
-                $articleModel->categories()->attach($category->getDbId());
-            }
-        }
+    public function fetchSingle(ArticleValue $articleValue) {
+        return Articles::getSingle($articleValue)->article;
     }
 
     public function create(Arguments $args, Collection $collection) {

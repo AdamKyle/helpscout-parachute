@@ -14,13 +14,19 @@ use HelpscoutApi\Response\Response;
 class Category {
 
     public function fetchAll(Collection $collection) {
-        $categories = Categories::getAll($collection)->categories->items;
+        return Categories::getAll($collection)->categories->items;
+    }
+
+    public function find(string $categoryName) {
+        $categories = Categories::getAll()->categories->items;
 
         forEach($categories as $category) {
-            $collection = new Collection($category->collectionId);
-            $collection->setDbId(CollectionEntity::where('collection_id', $category->collectionId)->first()->id);
-            (new CategoryEntity())->new(collect($category), $collection);
+            if ($category->name === $categoryName) {
+                return $category;
+            }
         }
+
+        return null;
     }
 
     public function createMultiple(array $fileContents, Collection $collection) {

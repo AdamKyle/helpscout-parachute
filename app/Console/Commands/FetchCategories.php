@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Helpscout\Domain\Entities\Collection as CollectionEntity;
+use App\Helpscout\Domain\Entities\Category as CategoryEntity;
 use App\Helpscout\Domain\Values\Collection;
 use App\Helpscout\Domain\Services\Category;
 
@@ -15,7 +16,7 @@ class FetchCategories extends Command
      *
      * @var string
      */
-    protected $signature = 'fetch:categories';
+    protected $signature = 'fetch:categories {collection?}';
 
     /**
      * The console command description.
@@ -41,14 +42,39 @@ class FetchCategories extends Command
      */
     public function handle()
     {
-        $collections = CollectionEntity::all();
-        $category    = new Category();
+        $collectionName = $this->argument('collection');
 
-        forEach($collections as $collection) {
-            $collectionValue = new Collection($collection->collection_id);
-            $collectionValue->setDbId($collection->id);
+        if (!is_null($collectionName)) {
+            $collectionFound = CollectionEntity::where('name', $collectionName)->first();
 
-            $category->fetchAll($collectionValue);
+            if (is_null($collectionFound)) {
+                throw new \InvalidArgumentException($collectionName . ' does not exist.');
+            }
+
+            $collectionValue = new Collection($collectionFound->collection_id);
+            $collectionValue->setDbId($collectionFound->id);
+
+            $this->fetchAndCreate($collectionValue);
+        } else {
+            $collections = CollectionEntity::all();
+
+            forEach($collections as $collection) {
+                $collectionValue = new Collection($collection->collection_id);
+                $collectionValue->setDbId($collection->id);
+
+                $this->fetchAndCreate($collectionValue);
+            }
+        }
+    }
+
+    protected function fetchAndCreate(Collection $collectionValue) {
+        $category   = new Category();
+        $categories = $category->fetchAll($collectionValue);
+
+        forEach($categories as $cat) {
+            $collection = new Collection($cat->collectionId);
+            $collection->setDbId(CollectionEntity::where('collection_id', $cat->collectionId)->first()->id);
+            $category = (new CategoryEntity())->new(collect($cat), $collectionValue);
         }
     }
 }

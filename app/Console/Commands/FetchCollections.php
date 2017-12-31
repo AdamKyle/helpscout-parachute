@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Helpscout\Domain\Services\Collection;
+use App\Helpscout\Domain\Entities\Collection as CollectionEntity;
 
 class FetchCollections extends Command
 {
@@ -39,6 +40,10 @@ class FetchCollections extends Command
     public function handle()
     {
         $collection = new Collection();
-        $collection->fetchAll();
+        $collections = $collection->fetchAll();
+
+        forEach($collections as $collection) {
+            (new CollectionEntity())->new(collect($collection));
+        }
     }
 }

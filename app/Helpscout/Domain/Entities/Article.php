@@ -18,4 +18,16 @@ class Article extends ArticleModel {
             'content'        => $article['text'],
         ]);
     }
+
+    public function updateExisting($articleEntity, IlluminateCollection $article) {
+        $articleEntity->fill([
+            'status'         => $article['status'],
+            'name'           => $article['name'],
+            'collection_id'  => Collection::where('collection_id', $article['collectionId'])->first()->id,
+            'content'        => $article['text'],
+        ]);
+
+        $articleEntity->save();
+        return $articleEntity;
+    }
 }
