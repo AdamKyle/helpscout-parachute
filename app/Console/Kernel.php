@@ -10,7 +10,7 @@ use App\Console\Commands\FetchArticles;
 use App\Console\Commands\CreateArticles;
 use App\Console\Commands\ResetDatabase;
 use App\Console\Commands\DeleteCollection;
-use App\Console\Commands\PullDocuments;
+use App\Console\Commands\UpdateDatabase;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
         CreateArticles::class,
         ResetDatabase::class,
         DeleteCollection::class,
-        PullDocuments::class,
+        UpdateDatabase::class,
     ];
 
     /**

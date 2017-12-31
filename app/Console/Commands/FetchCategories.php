@@ -45,14 +45,11 @@ class FetchCategories extends Command
         $collectionName = $this->argument('collection');
 
         if (!is_null($collectionName)) {
-            $collectionFound = CollectionEntity::where('name', $collectionName)->first();
+            $collection = (new CollectionEntity())->findByName($collectionName);
 
-            if (is_null($collectionFound)) {
-                throw new \InvalidArgumentException($collectionName . ' does not exist.');
+            if (is_null($collection)) {
+                throw new \Exception($collectionName . ' was not found');
             }
-
-            $collectionValue = new Collection($collectionFound->collection_id);
-            $collectionValue->setDbId($collectionFound->id);
 
             $this->fetchAndCreate($collectionValue);
         } else {

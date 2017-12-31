@@ -8,21 +8,21 @@ use App\Helpscout\Domain\Entities\Collection as CollectionEntity;
 use App\Helpscout\Domain\Entities\Article as ArticleEntity;
 use App\Helpscout\Domain\Entities\Category as CategoryEntity;
 
-class PullDocuments extends Command
+class UpdateDatabase extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'pull:docs';
+    protected $signature = 'update:docs';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Pull documents from helpscout via the api';
+    protected $description = 'Update the docs in the database';
 
     /**
      * Create a new command instance.
