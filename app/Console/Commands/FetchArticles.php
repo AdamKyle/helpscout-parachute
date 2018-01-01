@@ -77,7 +77,7 @@ class FetchArticles extends Command
                 if (is_null($foundArticle)) {
                     $this->create($article, $articleService, $categoryValue);
                 } else {
-                    $this->update($article, $articleService, $categoryValue);
+                    $this->update($foundArticle, $article, $articleService, $categoryValue);
                 }
             }
         }
@@ -91,7 +91,7 @@ class FetchArticles extends Command
         $articleModel->categories()->attach($categoryValue->getDbId());
     }
 
-    protected function update(stdClass $article, Article $articleService, Category $categoryValue) {
+    protected function update(ArticleEntity $foundArticle, \stdClass $article, Article $articleService, Category $categoryValue) {
         $articleValue  = new ArticleValue($article->id);
         $singleArticle = $articleService->fetchSingle($articleValue);
         $articleModel  = (new ArticleEntity())->updateExisting($foundArticle, collect($singleArticle));

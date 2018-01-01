@@ -23,6 +23,16 @@ class Collection extends CollectionModel {
         ]);
     }
 
+    public function updateExisting($collectionEntity, IlluminateCollection $collection) {
+        $collectionEntity->name       = $collection['name'];
+        $collectionEntity->visibility = $collection['visibility'];
+        $collectionEntity->site_id    = $collection['siteId'];
+
+        $collectionEntity->save();
+
+        return $collectionEntity;
+    }
+
     public function findByName(string $name) {
         $collectionFound = $this::where('name', $name)->first();
 

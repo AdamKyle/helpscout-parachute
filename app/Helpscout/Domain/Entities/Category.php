@@ -19,6 +19,14 @@ class Category extends CategoryModel {
         ]);
     }
 
+    public function updateExisting($categoryEntity, IlluminateCollection $category, Collection $collection) {
+        $categoryEntity->name          = $category['name'];
+        $categoryEntity->collection_id = $collection->getDbId();
+
+        $categoryEntity->save();
+        return $categoryEntity;
+    }
+
     public function findByNameAndCollectionId(string $name, string $collectionId) {
         $collectionEntity = CollectionEntity::where('collection_id', $collectionId)->first();
         $category = $collectionEntity->categories->where('name', $name)->first();

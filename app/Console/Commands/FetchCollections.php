@@ -43,7 +43,13 @@ class FetchCollections extends Command
         $collections = $collection->fetchAll();
 
         forEach($collections as $collection) {
-            (new CollectionEntity())->new(collect($collection));
+            $collectionFound = CollectionEntity::where('name', $collection->name)->first();
+
+            if (is_null($collectionFound)) {
+                (new CollectionEntity())->new(collect($collection));
+            } else {
+                (new CollectionEntity())->updateExisting($collectionFound, collect($collection));
+            }
         }
     }
 }

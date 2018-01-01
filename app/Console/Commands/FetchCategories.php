@@ -51,7 +51,7 @@ class FetchCategories extends Command
                 throw new \Exception($collectionName . ' was not found');
             }
 
-            $this->fetchAndCreate($collectionValue);
+            $this->manageCategory($collectionValue);
         } else {
             $collections = CollectionEntity::all();
 
@@ -59,19 +59,26 @@ class FetchCategories extends Command
                 $collectionValue = new Collection($collection->collection_id);
                 $collectionValue->setDbId($collection->id);
 
-                $this->fetchAndCreate($collectionValue);
+                $this->manageCategory($collectionValue);
             }
         }
     }
 
-    protected function fetchAndCreate(Collection $collectionValue) {
+    protected function manageCategory(Collection $collectionValue) {
         $category   = new Category();
         $categories = $category->fetchAll($collectionValue);
 
         forEach($categories as $cat) {
-            $collection = new Collection($cat->collectionId);
+            $categoryFound = CategoryEntity::where('name', $cat->name)->first();
+            $collection    = new Collection($cat->collectionId);
+
             $collection->setDbId(CollectionEntity::where('collection_id', $cat->collectionId)->first()->id);
-            $category = (new CategoryEntity())->new(collect($cat), $collectionValue);
+
+            if (is_null($categoryFound)) {
+                (new CategoryEntity())->new(collect($cat), $collectionValue);
+            } else {
+                (new CategoryEntity())->updateExisting($categoryFound, collect($cat), $collectionValue);
+            }
         }
     }
 }
