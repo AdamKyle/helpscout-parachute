@@ -32,7 +32,7 @@ To publish articles you can do:
 
 ### Other Commands
 
-- `php artisan fetch:collection`: Fetch all collection
+- `php artisan fetch:collections`: Fetch all collection
 - `php artisan fetch:categories`: Fetch all categories
 - `php artisan fetch:articles`: Fetch all articles
 - `php artisan delete:collection {collection}`: Deletes all articles, categories and the collection, both from Helpscout and the database (as well as article and category has many relationships)

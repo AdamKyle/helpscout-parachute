@@ -9,21 +9,21 @@ use App\Helpscout\Domain\Services\Collection;
 use HelpscoutApi\Response\Response;
 use App\Helpscout\Domain\Services\Article;
 
-class CreateArticles extends Command
+class UpdateLinks extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'create:docs {collection} {path} {directoryNesting?} {removeFirstElement?} {categoryIndex?}';
+    protected $signature = 'update:links {collection} {path} {directoryNesting?} {removeFirstElement?} {categoryIndex?}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'create a set of documents on Helpscout under a collection and set of categories based on folder name';
+    protected $description = 'Parses the html files updating links and then updating the documents on helpscout and in the database.';
 
     /**
      * Create a new command instance.
@@ -58,6 +58,6 @@ class CreateArticles extends Command
 
         // create the articles
         $article = new Article();
-        $article->create($args, $collectionService->handleCollection($collection, $args, $site));
+        $article->updateLinks($args, $collectionService->handleCollection($collection, $args, $site));
     }
 }

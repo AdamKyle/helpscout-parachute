@@ -45,6 +45,41 @@ class Article {
         $this->createMultiple($contents, $collection);
     }
 
+    public function updateLinks(Arguments $args, Collection $collection) {
+        if (!file_exists($args->getPath())) {
+            throw new \InvalidArgumentException($createArgs->getPath() . ' does not exist.');
+        }
+
+        $contents = $this->fetchAllFiles($args);
+
+        $categoryService = new CategoryService();
+        $categoryService->createMultiple($contents, $collection);
+
+        $this->updateMultiple($contents, $collection);
+    }
+
+    protected function updateMultiple(array $fileContents, Collection $collection) {
+        $requests = new Requests();
+
+        if (count($fileContents) === 0) {
+            throw new \Exception('Cannot proceede, there were no files found. Check your path.');
+        }
+
+        forEach($fileContents as $fileContent) {
+            $markdownToHtml = new Markdown();
+            $body           = new Body();
+
+            $body->collectionId($collection->getId());
+            $body->name($fileContent->getFileName());
+            $body->text($markdownToHtml->parse($fileContent->getContents()));
+            $body->categories([
+                CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
+            ]);
+
+            dd($body);
+        }
+    }
+
     protected function createMultiple(array $fileContents, Collection $collection) {
         $requests = new Requests();
 
