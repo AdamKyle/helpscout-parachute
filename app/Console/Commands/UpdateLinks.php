@@ -53,7 +53,6 @@ class UpdateLinks extends Command
             $this->argument('categoryIndex')
         );
 
-
         $collection = $collectionService->findInDatabase($args->getCollectionName());
 
         // create the articles

@@ -64,6 +64,7 @@ class FetchArticles extends Command
                 $categoryValue->setDbId($category->id);
 
                 $articles = $articleService->fetchAll($categoryValue);
+
                 $this->createOrUpdate($articles, $articleService, $categoryValue);
             }
         }

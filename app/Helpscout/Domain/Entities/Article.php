@@ -16,6 +16,7 @@ class Article extends ArticleModel {
             'name'           => $article['name'],
             'collection_id'  => Collection::where('collection_id', $article['collectionId'])->first()->id,
             'content'        => $article['text'],
+            'public_url'     => $article['publicUrl'],
         ]);
     }
 
@@ -25,6 +26,7 @@ class Article extends ArticleModel {
             'name'           => $article['name'],
             'collection_id'  => Collection::where('collection_id', $article['collectionId'])->first()->id,
             'content'        => $article['text'],
+            'public_url'     => $article['publicUrl'],
         ]);
 
         $articleEntity->save();

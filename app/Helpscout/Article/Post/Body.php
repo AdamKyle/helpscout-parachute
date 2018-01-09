@@ -14,6 +14,8 @@ class Body implements ArticlePostBodyContract {
 
     private $categories = [];
 
+    private $articleId;
+
     public function collectionID(String $collectionId) {
         $this->collectionId = $collectionId;
     }

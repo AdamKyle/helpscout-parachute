@@ -19,6 +19,7 @@ class Articles extends Migration
             $table->integer('article_number');
             $table->string('status');
             $table->string('name');
+            $table->string('public_url');
             $table->string('collection_id');
             $table->text('content');
             $table->timestamps();

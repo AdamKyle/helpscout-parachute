@@ -6,6 +6,7 @@ class ArticleLink {
 
     private $attribute;
     private $attributeValue;
+    private $newLinkValue;
 
     public function __construct(string $attribute, string $attributeValue) {
         $this->attribute      = $attribute;
@@ -18,5 +19,13 @@ class ArticleLink {
 
     public function getAttributeValue(): string {
         return $this->attributeValue;
+    }
+
+    public function setNewLinkValue(string $link) {
+        $this->newLinkValue = $link;
+    }
+
+    public function getNewLinkValue(): string {
+        return $this->newLinkValue;
     }
 }

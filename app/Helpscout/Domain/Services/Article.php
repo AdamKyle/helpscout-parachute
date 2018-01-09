@@ -17,7 +17,8 @@ Use App\Helpscout\Article\Post\Body;
 use App\Helpscout\Domain\Entities\Category as CategoryEntity;
 use App\Helpscout\Request\Requests;
 use HelpscoutApi\Response\Response;
-use App\Helpscout\Article\Dom\UpdateLinks;
+use App\Helpscout\Article\Dom\ArticleLinks;
+use \App\Helpscout\Domain\Values\ArticleLink;
 
 class Article {
 
@@ -77,10 +78,20 @@ class Article {
                 CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
             ]);
 
-            $updateArticleLinks = new UpdateLinks($body);
-            $document = $updateArticleLinks->getDomForArticle();
-            $links = $updateArticleLinks->getAllLinkTags($document);
-            $updateArticleLinks->createArticleLinks($links);
+            $articleLinks = new ArticleLinks($body);
+            $document     = $articleLinks->getDomForArticle();
+            $linkTags     = $articleLinks->getAllLinkTags($document);
+            $links        = $articleLinks->getArticleLinks($linkTags);
+            $linkValues   = [];
+
+            forEach($links as $link) {
+                $linkValues[] = $this->updateLink($link);
+            }
+
+            $articleLinks->replaceAttributes($linkValues, $document);
+            $body = $articleLinks->getUpdatedBody();
+
+            dd($body);
         }
     }
 
@@ -127,6 +138,23 @@ class Article {
                 $article->categories()->attach($categories);
             }
         );
+    }
+
+    protected function updateLink(ArticleLink $link) {
+        $linkPieces = explode('/', $link->getAttributeValue());
+
+        // This means the link's href starts with /path/to/path and not http://
+        if (empty($linkPieces[0])) {
+            $foundArticle = ArticleEntity::where('name', end($linkPieces))->first();
+
+            if (is_null($foundArticle)) {
+                $link->setNewLinkValue(env('SITE_BASE') . $link->getAttributeValue());
+            } else {
+                $link->setNewLinkValue($foundArticle->public_url);
+            }
+        }
+
+        return $link;
     }
 
     protected function fetchAllFiles(Arguments $args) {

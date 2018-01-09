@@ -23,6 +23,7 @@ class Article extends Model
         'name',
         'collection_id',
         'content',
+        'public_url'
     ];
 
     public function categories() {
