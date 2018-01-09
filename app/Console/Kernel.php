@@ -11,6 +11,7 @@ use App\Console\Commands\CreateArticles;
 use App\Console\Commands\ResetDatabase;
 use App\Console\Commands\DeleteCollection;
 use App\Console\Commands\UpdateDatabase;
+use App\Console\Commands\UpdateLinks;
 
 class Kernel extends ConsoleKernel
 {
@@ -27,6 +28,7 @@ class Kernel extends ConsoleKernel
         ResetDatabase::class,
         DeleteCollection::class,
         UpdateDatabase::class,
+        UpdateLinks::class,
     ];
 
     /**

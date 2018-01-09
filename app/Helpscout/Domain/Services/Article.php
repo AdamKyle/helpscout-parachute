@@ -11,12 +11,13 @@ use App\Helpscout\Domain\Values\Category;
 use App\Helpscout\Domain\Values\Article as ArticleValue;
 use App\Helpscout\Domain\Values\Collection;
 use App\Helpscout\Article\Create\Arguments;
-use App\HelpScout\Domain\Services\Category as CategoryService;
+use App\Helpscout\Domain\Services\Category as CategoryService;
 use App\Helpscout\Files\Files;
 Use App\Helpscout\Article\Post\Body;
-use App\HelpScout\Domain\Entities\Category as CategoryEntity;
-use App\HelpScout\Request\Requests;
+use App\Helpscout\Domain\Entities\Category as CategoryEntity;
+use App\Helpscout\Request\Requests;
 use HelpscoutApi\Response\Response;
+use App\Helpscout\Article\Dom\UpdateLinks;
 
 class Article {
 
@@ -76,7 +77,10 @@ class Article {
                 CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
             ]);
 
-            dd($body);
+            $updateArticleLinks = new UpdateLinks($body);
+            $document = $updateArticleLinks->getDomForArticle();
+            $links = $updateArticleLinks->getAllLinkTags($document);
+            $updateArticleLinks->createArticleLinks($links);
         }
     }
 

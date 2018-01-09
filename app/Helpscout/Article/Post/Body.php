@@ -27,7 +27,7 @@ class Body implements ArticlePostBodyContract {
     }
 
     public function getText() {
-        $this->text;
+        return $this->text;
     }
 
     public function categories(array $categories) {
