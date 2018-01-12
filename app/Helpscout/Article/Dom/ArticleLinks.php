@@ -44,6 +44,8 @@ class ArticleLinks {
             forEach($linkValues as $linkValue) {
                 if ($link->getAttribute('href') === $linkValue->getAttributeValue()) {
                     $link->setAttribute('href', $linkValue->getNewLinkValue());
+                } else {
+                    $link->setAttribute('href', env('SITE_BASE') . $linkValue->getAttributeValue());
                 }
             }
         }

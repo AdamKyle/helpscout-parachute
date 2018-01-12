@@ -20,8 +20,16 @@ class Body implements ArticlePostBodyContract {
         $this->collectionId = $collectionId;
     }
 
+    public function getCollectionId(): string {
+        return $this->collectionId;
+    }
+
     public function name(String $name)  {
         $this->name = $name;
+    }
+
+    public function getName(): string  {
+        return $this->name;
     }
 
     public function text(String $text) {
@@ -34,6 +42,10 @@ class Body implements ArticlePostBodyContract {
 
     public function categories(array $categories) {
         $this->categories = $categories;
+    }
+
+    public function getCategories(): array {
+        return $this->categories;
     }
 
     public function createPostBody() {

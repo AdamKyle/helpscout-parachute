@@ -45,19 +45,23 @@ class UpdateDatabase extends Command
         $collections = $collection->fetchAll();
 
         forEach($collections as $col) {
+            $collectionDb = null;
+
             if (is_null($collection->findInDatabase($col->name))) {
-
-                // Create the collection and then call fetch categories and articles.
-                $collectionDb = (new CollectionEntity())->new(collect($col));
-                $this->call('fetch:categories', ['collection' => $col->name]);
-
-                forEach($collectionDb->categories as $category) {
-                    $this->call('fetch:articles', [
-                        'category' => $category->name,
-                        'collectionId' => $col->id
-                    ]);
-                }
+                $this->updateDatabase((new CollectionEntity())->new(collect($col)));
+            } else {
+                $this->updateDatabase(CollectionEntity::where('name', $col->name)->first());
             }
+        }
+    }
+
+    protected function updateDatabase(CollectionEntity $collectionDb) {
+        $this->call('fetch:categories', ['collection' => $collectionDb->name]);
+
+        forEach($collectionDb as $collection) {
+            $this->call('fetch:articles', [
+                'collectionId' => $collection->id
+            ]);
         }
     }
 }

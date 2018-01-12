@@ -19,15 +19,21 @@ use App\Helpscout\Request\Requests;
 use HelpscoutApi\Response\Response;
 use App\Helpscout\Article\Dom\ArticleLinks;
 use \App\Helpscout\Domain\Values\ArticleLink;
+use App\Helpscout\Article\Put\Body as ArticlePutBody;
+use HelpscoutApi\Params\Article as ArticleParams;
 
 class Article {
 
-    public function fetchAll(Category $category) {
-        return Articles::getAllFromCategory($category)->articles->items;
+    public function fetchAll(Category $category, ArticleParams $articleParams = null) {
+        return Articles::getAllFromCategory($category, $articleParams)->articles->items;
     }
 
-    public function fetchAllFromCollection(Collection $collection) {
-        return Article::getAllFromCollection($collection)->articles->items;
+    public function fetchAllFromCollection(Collection $collection, ArticleParams $articleParams = null) {
+        return Articles::getAllFromCollection($collection, $articleParams);
+    }
+
+    public function createCollectionRequest(Collection $collection, ArticleParams $articleParams = null) {
+        return Articles::collectionGetRequest($collection, $articleParams);
     }
 
     public function fetchSingle(ArticleValue $articleValue) {
@@ -36,7 +42,7 @@ class Article {
 
     public function create(Arguments $args, Collection $collection) {
         if (!file_exists($args->getPath())) {
-            throw new \InvalidArgumentException($createArgs->getPath() . ' does not exist.');
+            throw new \InvalidArgumentException($args->getPath() . ' does not exist.');
         }
 
         $contents = $this->fetchAllFiles($args);
@@ -49,7 +55,7 @@ class Article {
 
     public function updateLinks(Arguments $args, Collection $collection) {
         if (!file_exists($args->getPath())) {
-            throw new \InvalidArgumentException($createArgs->getPath() . ' does not exist.');
+            throw new \InvalidArgumentException($args->getPath() . ' does not exist.');
         }
 
         $contents = $this->fetchAllFiles($args);
@@ -66,6 +72,8 @@ class Article {
         if (count($fileContents) === 0) {
             throw new \Exception('Cannot proceede, there were no files found. Check your path.');
         }
+
+        $articlePutBody = new ArticlePutBody();
 
         forEach($fileContents as $fileContent) {
             $markdownToHtml = new Markdown();
@@ -91,8 +99,18 @@ class Article {
             $articleLinks->replaceAttributes($linkValues, $document);
             $body = $articleLinks->getUpdatedBody();
 
-            dd($body);
+            $articleInfo = ArticleEntity::where('name', $fileContent->getFileName())->first();
+
+            if (is_null($articleInfo)) {
+                dd($fileContent->getFileName());
+                throw new \Exception('Cannot update article links for an article that does not exist');
+            }
+
+            $articlePutBody->id($articleInfo->article_id);
+            $articlePutBody->articlePostBody($body);
         }
+
+        dd($articlePutBody);
     }
 
     protected function createMultiple(array $fileContents, Collection $collection) {
