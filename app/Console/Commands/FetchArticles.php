@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Helpscout\Domain\Entities\Collection;
-use App\Helpscout\Article\Fetch\Collection\Article;
+use App\Helpscout\Article\Fetch\Collection\FetchFactory;
 
 class FetchArticles extends Command
 {
@@ -43,14 +43,14 @@ class FetchArticles extends Command
 
         if (!is_null($collectionId)) {
             $collection  = Collection::where('id', $collectionId)->first();
-            $article     = new Article($collection);
+            $article     = new FetchFactory($collection);
 
-            $article->createFromCollection($collection);
+            $article->getFactoryInstance()->createFromCollection();
         } else {
             $collections = Collection::all();
-            $article     = new Article($collections);
+            $article     = new FetchFactory($collections);
 
-            $article->createFromCollections();
+            $article->getFactoryInstance()->createFromCollections();
         }
     }
 }

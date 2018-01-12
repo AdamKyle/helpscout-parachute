@@ -58,10 +58,8 @@ class UpdateDatabase extends Command
     protected function updateDatabase(CollectionEntity $collectionDb) {
         $this->call('fetch:categories', ['collection' => $collectionDb->name]);
 
-        forEach($collectionDb as $collection) {
-            $this->call('fetch:articles', [
-                'collectionId' => $collection->id
-            ]);
-        }
+        $this->call('fetch:articles', [
+            'collectionId' => $collectionDb->id
+        ]);
     }
 }
