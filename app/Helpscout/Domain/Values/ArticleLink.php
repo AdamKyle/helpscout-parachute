@@ -26,6 +26,10 @@ class ArticleLink {
     }
 
     public function getNewLinkValue(): string {
+        if (is_null($this->newLinkValue)) {
+            dd($this->attributeValue, $this->newLinkValue);
+        }
+        
         return $this->newLinkValue;
     }
 }

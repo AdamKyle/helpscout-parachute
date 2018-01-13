@@ -170,6 +170,9 @@ class Article {
             } else {
                 $link->setNewLinkValue($foundArticle->public_url);
             }
+        } else {
+            // If it does contain an http:// then just ignore it.
+            $link->setNewLinkValue($link->getAttributeValue());
         }
 
         return $link;
