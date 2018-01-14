@@ -3,24 +3,18 @@
 namespace App\Helpscout\Domain\Services;
 
 use \Articles;
-use \Article as ArticleFacade;
-use \Pool;
-use cebe\markdown\Markdown;
-use App\Helpscout\Domain\Entities\Article as ArticleEntity;
-use App\Helpscout\Domain\Values\Category;
-use App\Helpscout\Domain\Values\Article as ArticleValue;
-use App\Helpscout\Domain\Values\Collection;
-use App\Helpscout\Article\Create\Arguments;
-use App\Helpscout\Domain\Services\Category as CategoryService;
-use App\Helpscout\Files\Files;
-Use App\Helpscout\Article\Post\Body;
-use App\Helpscout\Domain\Entities\Category as CategoryEntity;
+use \ArticlePut;
+use \ArticleFacade;
 use App\Helpscout\Request\Requests;
-use HelpscoutApi\Response\Response;
-use App\Helpscout\Article\Dom\ArticleLinks;
-use \App\Helpscout\Domain\Values\ArticleLink;
+use App\Helpscout\Article\Post\Body;
+use cebe\markdown\Markdown;
+use App\Helpscout\Domain\Services\Pool;
+use App\Helpscout\Domain\Entities\Article as ArticleEntity;
+use App\Helpscout\Domain\Entities\Category as CategoryEntity;
+use App\Helpscout\Domain\Services\File as FileService;
+use App\Helpscout\Domain\Services\Category as CategoryService;
 use App\Helpscout\Article\Put\Body as ArticlePutBody;
-use HelpscoutApi\Params\Article as ArticleParams;
+use App\Helpscout\Domain\Services\ArticleLinks as ArticleLinksService;
 
 class Article {
 
@@ -40,12 +34,23 @@ class Article {
         return Articles::getSingle($articleValue)->article;
     }
 
-    public function create(Arguments $args, Collection $collection) {
+    public function createOrUpdate(\stdClass $article) {
+        $articleEntity = ArticleEntity::where('name', $article->name)->first();
+
+        if (is_null($articleEntity)) {
+            $this->create($article);
+        } else {
+            $this->update($articleEntity, $article);
+        }
+
+    }
+
+    public function createFromFiles(Arguments $args, Collection $collection) {
         if (!file_exists($args->getPath())) {
             throw new \InvalidArgumentException($args->getPath() . ' does not exist.');
         }
 
-        $contents = $this->fetchAllFiles($args);
+        $contents = (new FileService())->fetchAllFiles($args);
 
         $categoryService = new CategoryService();
         $categoryService->createMultiple($contents, $collection);
@@ -53,64 +58,41 @@ class Article {
         $this->createMultiple($contents, $collection);
     }
 
+    protected function update(ArticleEntity $articleEntity, \stdClass $article) {
+        $articleEntity = (new ArticleEntity())->updateExisting($articleEntity, collect($article));
+        $categories    = [];
+
+        forEach($article->categories as $category) {
+            $categories[] = CategoryEntity::where('category_id', $category)->first()->id;
+        }
+
+        $articleEntity->categories()->detach();
+        $articleEntity->categories()->attach($categories);
+    }
+
+    protected function create(\stdClass $article) {
+        $articleEntity = (new ArticleEntity())->new(collect($article));
+
+        $categories = [];
+
+        forEach($article->categories as $category) {
+            $categories[] = CategoryEntity::where('category_id', $category)->first()->id;
+        }
+
+        $articleEntity->categories()->attach($categories);
+    }
+
     public function updateLinks(Arguments $args, Collection $collection) {
         if (!file_exists($args->getPath())) {
             throw new \InvalidArgumentException($args->getPath() . ' does not exist.');
         }
 
-        $contents = $this->fetchAllFiles($args);
+        $contents = (new FileService())->fetchAllFiles($args);
 
         $categoryService = new CategoryService();
         $categoryService->createMultiple($contents, $collection);
 
-        $this->updateMultiple($contents, $collection);
-    }
-
-    protected function updateMultiple(array $fileContents, Collection $collection) {
-        $requests = new Requests();
-
-        if (count($fileContents) === 0) {
-            throw new \Exception('Cannot proceede, there were no files found. Check your path.');
-        }
-
-        $articlePutBody = new ArticlePutBody();
-
-        forEach($fileContents as $fileContent) {
-            $markdownToHtml = new Markdown();
-            $body           = new Body();
-
-            $body->collectionId($collection->getId());
-            $body->name($fileContent->getFileName());
-            $body->text($markdownToHtml->parse($fileContent->getContents()));
-            $body->categories([
-                CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
-            ]);
-
-            $articleLinks = new ArticleLinks($body);
-            $document     = $articleLinks->getDomForArticle();
-            $linkTags     = $articleLinks->getAllLinkTags($document);
-            $links        = $articleLinks->getArticleLinks($linkTags);
-            $linkValues   = [];
-
-            forEach($links as $link) {
-                $linkValues[] = $this->updateLink($link);
-            }
-
-            $articleLinks->replaceAttributes($linkValues, $document);
-            $body = $articleLinks->getUpdatedBody();
-
-            $articleInfo = ArticleEntity::where('name', $fileContent->getFileName())->first();
-
-            if (is_null($articleInfo)) {
-                dd($fileContent->getFileName());
-                throw new \Exception('Cannot update article links for an article that does not exist');
-            }
-
-            $articlePutBody->id($articleInfo->article_id);
-            $articlePutBody->articlePostBody($body);
-        }
-
-        dd($articlePutBody);
+        $this->updateMultipleArticleLinks($contents, $collection);
     }
 
     protected function createMultiple(array $fileContents, Collection $collection) {
@@ -121,72 +103,54 @@ class Article {
         }
 
         forEach($fileContents as $fileContent) {
-            $markdownToHtml = new Markdown();
-            $body           = new Body();
-
-            $body->collectionId($collection->getId());
-            $body->name($fileContent->getFileName());
-            $body->text($markdownToHtml->parse($fileContent->getContents()));
-            $body->categories([
-                CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
-            ]);
-
+            $body = $this->setBody(new Body(), new Markdown(), $collection, $fileContents);
             $requests->pushRequest(ArticleFacade::createRequest($body));
-            $requests->setConcurrency(20);
         }
 
-        Pool::pool(
-            $requests,
-            function($reason, $index) use($requests) {
-                // Lets see what was in that request that failed:
-                dd($requests->getRequests()[$index]->getBody()->getContents());
-
-                throw new \Exception($reason);
-            },
-            function($response) {
-                $contents = (new Response($response))->getContents()->article;
-                $article = (new ArticleEntity())->new(collect($contents));
-
-                $categories = [];
-
-                forEach($contents->categories as $category) {
-                    $categories[] = CategoryEntity::where('category_id', $category)->first()->id;
-                }
-
-                $article->categories()->attach($categories);
-            }
-        );
+        $requests->setConcurrency(20);
+        $pool = new Pool($requests, $this);
+        $pool->pool();
     }
 
-    protected function updateLink(ArticleLink $link) {
-        $linkPieces = explode('/', $link->getAttributeValue());
+    protected function updateMultipleArticleLinks(array $fileContents, Collection $collection) {
+        $requests = new Requests();
 
-        // This means the link's href starts with /path/to/path and not http://
-        if (empty($linkPieces[0])) {
-            $foundArticle = ArticleEntity::where('name', end($linkPieces))->first();
-
-            if (is_null($foundArticle)) {
-                $link->setNewLinkValue(env('SITE_BASE') . $link->getAttributeValue());
-            } else {
-                $link->setNewLinkValue($foundArticle->public_url);
-            }
-        } else {
-            // If it does contain an http:// then just ignore it.
-            $link->setNewLinkValue($link->getAttributeValue());
+        if (count($fileContents) === 0) {
+            throw new \Exception('Cannot proceede, there were no files found. Check your path.');
         }
 
-        return $link;
+
+        forEach($fileContents as $fileContent) {
+            $body           = $this->setBody(new Body(), new Markdown(), $collection, $fileContent);
+            $articlePutBody = new ArticlePutBody();
+            $articleLinks   = new ArticleLinksService($body);
+            $links          = $articleLinks->getLinks();
+            $updatedLinks   = $articleLinks->replaceLinks($links);
+            $document       = $articleLinks->getArticleLinks()->getDomForArticle();
+
+            $articleLinks->getArticleLinks()->replaceAttributes($updatedLinks, $document);
+
+            $body      = $articleLinks->getArticleLinks()->getUpdatedBody();
+            $articleId = ArticleEntity::where('name', $body->getName())->first()->article_id;
+
+            $articlePutBody->id($articleId);
+            $articlePutBody->articlePostBody($body);
+            $requests->pushRequest(ArticlePut::updateRequest($articlePutBody));
+        }
+
+        $requests->setConcurrency(20);
+        $pool = new Pool($requests, $this);
+        $pool->pool();
     }
 
-    protected function fetchAllFiles(Arguments $args) {
-        $files = new Files($args->getCategoryIndex());
+    public function setBody(Body $body, Markdown $markdown, Collection $collection, FileInformation $fileContent) {
+        $body->collectionId($collection->getId());
+        $body->name($fileContent->getFileName());
+        $body->text($markdown->parse($fileContent->getContents()));
+        $body->categories([
+            CategoryEntity::where('name', $fileContent->getCategory())->first()->category_id
+        ]);
 
-        $files->getAllContents(
-            $args->getPath(),
-            $args->getDirectoryNesting(),
-            $args->shouldRemoveFirstElement()
-        );
-
-        return $files->getAllFiles();
+        return $body;
     }
 }

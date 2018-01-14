@@ -1,5 +1,5 @@
 <?php
-namespace App\HelpScout\Request;
+namespace App\Helpscout\Request;
 
 use HelpscoutApi\Contracts\RequestPool;
 use GuzzleHttp\Psr7\Request;

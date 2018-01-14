@@ -57,6 +57,6 @@ class CreateArticles extends Command
 
         // create the articles
         $article = new Article();
-        $article->create($args, $collectionService->handleCollection($collection, $args, $site));
+        $article->createFromFiles($args, $collectionService->handleCollection($collection, $args, $site));
     }
 }

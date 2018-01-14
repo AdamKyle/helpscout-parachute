@@ -40,13 +40,11 @@ class ArticleLinks {
     public function replaceAttributes(array $linkValues, DOMDocument $document) {
         $links = $this->getAllLinkTags($document);
 
-        forEach($links as $link) {
-            forEach($linkValues as $linkValue) {
-                if ($link->getAttribute('href') === $linkValue->getAttributeValue()) {
-                    $link->setAttribute('href', $linkValue->getNewLinkValue());
-                } else {
-                    $link->setAttribute('href', env('SITE_BASE') . $linkValue->getAttributeValue());
-                }
+        forEach($links as $index => $link) {
+            if ($link->getAttribute('href') === $linkValues[$index]->getAttributeValue()) {
+                $link->setAttribute('href', $linkValues[$index]->getNewLinkValue());
+            } else {
+                $link->setAttribute('href', env('SITE_BASE') . $linkValues[$index]->getAttributeValue());
             }
         }
 
