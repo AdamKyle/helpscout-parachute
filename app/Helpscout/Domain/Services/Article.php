@@ -9,12 +9,16 @@ use App\Helpscout\Request\Requests;
 use App\Helpscout\Article\Post\Body;
 use cebe\markdown\Markdown;
 use App\Helpscout\Domain\Services\Pool;
+use App\Helpscout\Domain\Values\Collection;
+use App\Helpscout\Article\Create\Arguments;
+use App\Helpscout\Domain\Values\Article as ArticleValue;
 use App\Helpscout\Domain\Entities\Article as ArticleEntity;
 use App\Helpscout\Domain\Entities\Category as CategoryEntity;
 use App\Helpscout\Domain\Services\File as FileService;
 use App\Helpscout\Domain\Services\Category as CategoryService;
 use App\Helpscout\Article\Put\Body as ArticlePutBody;
 use App\Helpscout\Domain\Services\ArticleLinks as ArticleLinksService;
+use HelpscoutApi\Params\Article as ArticleParams;
 
 class Article {
 
@@ -36,7 +40,7 @@ class Article {
 
     public function createOrUpdate(\stdClass $article) {
         $articleEntity = ArticleEntity::where('name', $article->name)->first();
-
+        
         if (is_null($articleEntity)) {
             $this->create($article);
         } else {

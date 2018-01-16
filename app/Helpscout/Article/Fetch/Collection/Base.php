@@ -95,7 +95,7 @@ class Base {
         $article->updateExisting($article, collect($helpscoutArticle));
         $article->categories()->detach();
 
-        forEach($article->categories as $category) {
+        forEach($helpscoutArticle->categories as $category) {
             $category = CategoryEntity::where('category_id', $category)->first();
 
             if (!is_null($category)) {

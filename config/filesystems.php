@@ -48,6 +48,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        'helpscout_docs' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/helpscout'),
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
